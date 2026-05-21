@@ -134,6 +134,21 @@ def _draw_red_strip(c):
     c.restoreState()
 
 
+def pdf_na_png(pdf_bytes: bytes, scale: float = 3.0) -> bytes:
+    """Převede první stránku PDF na PNG (pro náhled v prohlížeči).
+
+    Náhled přes obrázek funguje i v přísně nastaveném Edge / firemních
+    prohlížečích, které blokují vkládání PDF přes data: URL.
+    """
+    import pypdfium2 as pdfium
+    doc = pdfium.PdfDocument(io.BytesIO(pdf_bytes))
+    page = doc[0]
+    pil_image = page.render(scale=scale).to_pil()
+    buf = io.BytesIO()
+    pil_image.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 def generate_business_card_bytes(data: dict) -> bytes:
     """Vyrobí PDF vizitku a vrátí ji jako bytes."""
     buf = io.BytesIO()

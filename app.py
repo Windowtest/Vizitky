@@ -17,7 +17,7 @@ from typing import Optional
 import streamlit as st
 
 from generator import (build_vcard, generate_business_card_bytes,
-                        render_qr_png)
+                        pdf_na_png, render_qr_png)
 
 
 def _hledat(row: dict, klice: list) -> str:
@@ -298,15 +298,9 @@ with tab_jedna:
         st.markdown("### 3️⃣ Náhled")
 
         if st.session_state.pdf_bytes:
-            # PDF náhled v iframe
-            b64 = base64.b64encode(st.session_state.pdf_bytes).decode()
-            st.markdown(
-                f'<iframe src="data:application/pdf;base64,{b64}#zoom=160" '
-                f'width="100%" height="330" '
-                f'style="border:1px solid #ddd; border-radius:6px; background:#fff;">'
-                f'</iframe>',
-                unsafe_allow_html=True,
-            )
+            # Náhled jako obrázek (funguje i v přísném firemním Edge)
+            st.image(pdf_na_png(st.session_state.pdf_bytes),
+                     use_container_width=True)
 
             # Akce
             st.markdown("### 4️⃣ Co s vizitkou")
@@ -631,14 +625,7 @@ with tab_auto:
                             f"({data['email']})</span>",
                             unsafe_allow_html=True,
                         )
-                        b64 = base64.b64encode(pdf).decode()
-                        st.markdown(
-                            f'<iframe src="data:application/pdf;base64,{b64}#zoom=120" '
-                            f'width="100%" height="220" '
-                            f'style="border:1px solid #eee; border-radius:4px;">'
-                            f'</iframe>',
-                            unsafe_allow_html=True,
-                        )
+                        st.image(pdf_na_png(pdf), use_container_width=True)
                         safe = re.sub(r"[^\w\s-]", "", data["jmeno"], flags=re.UNICODE)
                         safe = re.sub(r"\s+", "_", safe.strip())
                         st.download_button(
